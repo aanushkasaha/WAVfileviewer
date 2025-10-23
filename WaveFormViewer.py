@@ -1,42 +1,30 @@
 import streamlit as st
-import librosa
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
+import librosa
 
-st.title("Heartbeat Waveform Visualizer")
-
-uploaded_file = st.file_uploader("Upload a WAV file", type=["wav"], key="heartbeatupload")
-
+st.title("WaveForm Visualiser.")
+uploaded_file= st.file_uploader("Please upload your WAV file.", type="wav" , key="waveformuploader.")
 if uploaded_file is not None:
-    if st.button("Show Waveform"):
-        y, sr = librosa.load(uploaded_file, sr=None)
+        y,sr= librosa.load(uploaded_file,sr=None)
+        duration=st.slider("Select Time duration Scale", 0.25, 5.0, 0.5)
+        maxSamples=int(duration*sr)
+        y=y[:maxSamples]
 
-        # Limit duration to 1 second
-        duration_limit = 1
-        max_samples = int(duration_limit * sr)
-        y_trimmed = y[:max_samples]
+        amp = st.slider("Select Amplitude Scale", 100, 5000, 500, step=100)
+        y*=amp
 
-        # Scale amplitude for visibility
-        amplitude_factor = 500
-        y_trimmed *= amplitude_factor
+        time=np.linspace(0,len(y)/sr,num=len(y))
 
-        # Time axis
-        time = np.linspace(0, len(y_trimmed) / sr, num=len(y_trimmed))
-
-        # Plot waveform
         fig, ax = plt.subplots(figsize=(12, 4))
-        ax.plot(time, y_trimmed, color='blue')
-        ax.set_title("Heartbeat Waveform")
+        ax.plot(time, y, color='blue')
+        ax.set_title("WaveForm Visualiser")
         ax.set_xlabel("Time [s]")
-        ax.set_ylabel("Amplitude")
+        ax.set_ylabel(f"Amplitude (Scaled ×{amp})")
         ax.grid(True)
 
-        # Display plot
         st.pyplot(fig)
-
-        # Show success message
-        st.success(f"Waveform plotted! Sample rate: {sr} Hz | Duration: {len(y)/sr:.2f} seconds")
+        plt.show()
 
 
-else:
-    st.write("Please upload the WAV file")
+    
